@@ -1,0 +1,2 @@
+# Predicting-the-Risk-of-Diabetes-Using-Lifestyle-and-Medical-Factors
+This repository contains analysis from my project in Categorical data analysis course at SQU it focus on predicting the risk of diabetes using statistical modeling techniques. A logistic regression model was applied to medical data to estimate the probability of an individual being diabetic based on key health and lifestyle factors.
