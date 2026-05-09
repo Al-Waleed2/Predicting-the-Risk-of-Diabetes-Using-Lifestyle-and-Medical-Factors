@@ -1,0 +1,130 @@
+---
+title: "Diabetes Risk Prediction Using Logistic Regression"
+author: "Alwaleed Al Masqari"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Introduction
+This project aims to predict the risk of diabetes using logistic regression based on medical and lifestyle factors. The analysis uses the Pima Indians Diabetes dataset.
+
+## Load Libraries
+```{r}
+# install.packages(c("tidyverse", "caret"))
+library(tidyverse)
+library(caret)
+```
+
+## Load Data
+```{r}
+library("readxl")
+data <- read_excel("diabetes_dataset.xlsx")
+str(data)
+summary(data)
+```
+
+## Data Cleaning
+```{r}
+cols_with_zero <- c("Glucose", "BloodPressure", "SkinThickness", "Insulin", "BMI")
+
+data[cols_with_zero] <- lapply(data[cols_with_zero], function(x) {
+  ifelse(x == 0, NA, x)
+})
+
+data_clean <- na.omit(data)
+```
+
+## Exploratory Data Analysis
+
+### Glucose Distribution
+```{r}
+
+library(ggplot2)
+library(patchwork)
+
+p1 <- ggplot(data_clean, aes(x = Glucose)) +
+  geom_histogram(aes(y = ..density..), binwidth = 10,
+    fill = "#C17920", color = "#8B5A10", alpha = 0.85) +
+  geom_density(color = "#6B3A0F", linewidth = 1.2) +
+  geom_vline(aes(xintercept = mean(Glucose)), color = "#D97006", linewidth = 1) +
+  geom_vline(aes(xintercept = median(Glucose)), color = "#8B4513",
+    linewidth = 1, linetype = "dashed") +
+  theme_minimal(base_size = 14)
+
+p2 <- ggplot(data_clean, aes(x = Glucose, y = 1)) +
+  geom_boxplot(fill = "#C17920", color = "#6B3A0F", alpha = 0.4) +
+  theme_void()
+
+p1 / p2 + plot_layout(heights = c(4, 1))
+```
+
+### BMI Distribution
+```{r}
+ggplot(data_clean, aes(x = BMI)) +
+  geom_histogram(binwidth = 2) +
+  theme_minimal()
+
+#4F81BD
+#C0504D
+```
+
+### Outcome Distribution
+```{r}
+ggplot(data_clean, aes(x = factor(Outcome))) +
+  geom_bar() +
+  labs(x = "Diabetes Status", y = "Count") +
+  theme_minimal()
+```
+
+## Logistic Regression Model
+```{r}
+model <- glm(Outcome ~ Glucose + BMI + Age + Insulin + BloodPressure,
+             data = data_clean,
+             family = binomial)
+
+summary(model)
+```
+
+## Odds Ratios
+```{r}
+exp(coef(model))
+exp(confint(model))
+```
+
+## Prediction
+```{r}
+probabilities <- predict(model, type = "response")
+predicted_class <- ifelse(probabilities >= 0.5, 1, 0)
+```
+
+## Model Evaluation
+```{r}
+conf_matrix <- table(Predicted = predicted_class, Actual = data_clean$Outcome)
+conf_matrix
+```
+
+## Performance Metrics
+```{r}
+TN <- conf_matrix[1,1]
+FP <- conf_matrix[1,2]
+FN <- conf_matrix[2,1]
+TP <- conf_matrix[2,2]
+
+accuracy <- (TP + TN) / sum(conf_matrix)
+sensitivity <- TP / (TP + FN)
+specificity <- TN / (TN + FP)
+precision <- TP / (TP + FP)
+
+accuracy
+sensitivity
+specificity
+precision
+```
+
+## Confusion Matrix (Caret)
+```{r}
+confusionMatrix(as.factor(predicted_class), as.factor(data_clean$Outcome))
+```
+
+## Conclusion
+The model demonstrates that glucose, BMI, and age are the most significant predictors of diabetes. Logistic regression achieved good performance, making it a useful tool for early risk prediction.
