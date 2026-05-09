@@ -7,3 +7,6 @@ R
 R Markdown
 # Data
 The dataset used is the Pima Indians Diabetes Database obtained from Kaggle.
+## Project Report
+
+📄 Download the full report: [Diabetes Logistic Regression Project](Diabetes_Logistic_Regression_Project.docx)
